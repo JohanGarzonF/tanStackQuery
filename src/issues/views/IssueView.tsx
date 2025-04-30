@@ -3,7 +3,6 @@ import { IssueComment } from '../components/IssueComment';
 import { FiSkipBack } from 'react-icons/fi';
 import { useIssue } from '../hooks';
 import { LoadingSpinner } from '../../shared/components';
-import { comment } from 'postcss';
 
 export const IssueView = () => {
   const navigate = useNavigate();

@@ -1,6 +1,9 @@
 import { FiCheckCircle, FiInfo, FiMessageSquare } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { GithubIssue, State } from '../interfaces';
+import { useQueryClient } from '@tanstack/react-query';
+import { timeSince } from '../../helpers';
+// import { getIssue, getIssueComments } from '../actions';
 
 interface Props {
   issue: GithubIssue;
@@ -8,12 +11,36 @@ interface Props {
 
 export const IssueItem = ({ issue }: Props) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // const prefetchData = () => {
+  //   queryClient.prefetchQuery({
+  //     queryKey: [ 'issues', issue.number ],
+  //     queryFn: () => getIssue( issue.number ),
+  //     staleTime: 1000 * 60
+  //   });
+
+  //   queryClient.prefetchQuery({
+  //     queryKey: [ 'issues', issue.number, 'comments' ],
+  //     queryFn: () => getIssueComments( issue.number ),
+  //     staleTime: 1000 * 60
+  //   });
+  // };
+
+  const presetData = () => {
+    queryClient.setQueryData(['issues', issue.number], issue, {
+      updatedAt: Date.now() + ( 1000 * 60 )
+    })
+  }
 
   return (
-    <div className="animate-fadeIn flex items-center px-2 py-3 mb-5 border rounded-md bg-slate-900 hover:bg-slate-800">
+    <div
+      // onMouseEnter={ prefetchData }
+      onMouseEnter={ presetData }
+      className="animate-fadeIn flex items-center px-2 py-3 mb-5 border rounded-md bg-slate-900 hover:bg-slate-800">
       
       {
-        ( issue.state === State.Close )
+        ( issue.state === State.Closed )
         ? <FiCheckCircle size={30} color="green" />
         : <FiInfo size={30} color="red" className="min-w-10" />
       }
@@ -26,9 +53,24 @@ export const IssueItem = ({ issue }: Props) => {
           { issue.title }
         </a>
         <span className="text-gray-500">
-          #{ issue.number } opened 2 days ago by{' '}
+          #{ issue.number } opened { timeSince( issue.created_at ) } ago by{' '}
           <span className="font-bold">{ issue.user.login }</span>
         </span>
+
+        <div className="flex flex-wrap my-2">
+          {
+            issue.labels.map(label => (
+              <span
+                key={ label.id }
+                className='px-2 py-1 text-xs rounded-md m-1'
+                style={{
+                  border: `1px solid #${label.color}`,
+                  color: `#${label.color}`
+                }}
+              >{ label.name }</span>
+            ))
+          }
+        </div>
       </div>
 
       <img
